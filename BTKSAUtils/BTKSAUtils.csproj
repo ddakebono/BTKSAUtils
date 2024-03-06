@@ -1,0 +1,70 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <LangVersion>default</LangVersion>
+        <Company>BTK-Development</Company>
+      <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="0Harmony">
+        <HintPath>..\3rdparty\ml\0Harmony.dll</HintPath>
+      </Reference>
+      <Reference Include="Assembly-CSharp">
+        <HintPath>..\3rdparty\Managed\Assembly-CSharp.dll</HintPath>
+      </Reference>
+      <Reference Include="BTKUILib">
+        <HintPath>..\3rdparty\Mods\BTKUILib.dll</HintPath>
+      </Reference>
+      <Reference Include="MelonLoader">
+        <HintPath>..\3rdparty\ml\MelonLoader.dll</HintPath>
+      </Reference>
+      <Reference Include="Newtonsoft.Json">
+        <HintPath>..\3rdparty\Managed\Newtonsoft.Json.dll</HintPath>
+      </Reference>
+      <Reference Include="TotallyWholesome">
+        <HintPath>C:\Program Files (x86)\Steam\steamapps\common\ChilloutVR\UserData\TotallyWholesome\TotallyWholesome.dll</HintPath>
+      </Reference>
+      <Reference Include="Unity.TextMeshPro">
+        <HintPath>..\3rdparty\Managed\Unity.TextMeshPro.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine">
+        <HintPath>..\3rdparty\Managed\UnityEngine.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.AnimationModule">
+        <HintPath>..\3rdparty\Managed\UnityEngine.AnimationModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.CoreModule">
+        <HintPath>..\3rdparty\Managed\UnityEngine.CoreModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.UI">
+        <HintPath>..\3rdparty\Managed\UnityEngine.UI.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.UIModule">
+        <HintPath>..\3rdparty\Managed\UnityEngine.UIModule.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Images\BTKIcon.png" />
+      <EmbeddedResource Include="Images\BTKIcon.png" />
+      <None Remove="Images\Settings.png" />
+      <EmbeddedResource Include="Images\Settings.png" />
+      <None Remove="Images\TurnOff.png" />
+      <EmbeddedResource Include="Images\TurnOff.png" />
+      <None Remove="Images\Body.png" />
+      <EmbeddedResource Include="Images\Body.png" />
+      <None Remove="Images\List.png" />
+      <EmbeddedResource Include="Images\List.png" />
+      <None Remove="Images\Checkmark.png" />
+      <EmbeddedResource Include="Images\Checkmark.png" />
+      <None Remove="Images\Star.png" />
+      <EmbeddedResource Include="Images\Star.png" />
+      <None Remove="Images\BTKSATrash.png" />
+      <EmbeddedResource Include="Images\BTKSATrash.png" />
+    </ItemGroup>
+
+</Project>

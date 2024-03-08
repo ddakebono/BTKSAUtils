@@ -210,6 +210,10 @@ internal class GestureParamDriver
 
             _paramListButtons.Add(config, newButton);
         }
+        else
+        {
+            _paramListButtons[config].ButtonText = config.Name;
+        }
 
         if (config.Gesture != null)
         {
@@ -238,37 +242,42 @@ internal class GestureParamDriver
             {
                 if (config.GestureType == CVRGesture.GestureType.OneShot)
                 {
-                    var animParam = PlayerSetup.Instance.animatorManager.animator.parameters.FirstOrDefault(x => x.name == config.TargetParam);
-
-                    if (animParam == null)
-                        return;
-
-                    if (animParam.type != AnimatorControllerParameterType.Bool)
+                    if (DateTime.Now.Subtract(config.LastResetHit).TotalSeconds >= .5)
                     {
-                        BTKSAUtils.Logger.Msg($"GestureParamDriver for {config.Name} is set to OneShot mode! This can only be used for Bool parameters!");
-                        return;
+                        var animParam = PlayerSetup.Instance.animatorManager.animator.parameters.FirstOrDefault(x => x.name == config.TargetParam);
+
+                        if (animParam == null)
+                            return;
+
+                        if (animParam.type != AnimatorControllerParameterType.Bool)
+                        {
+                            BTKSAUtils.Logger.Msg($"GestureParamDriver for {config.Name} is set to OneShot mode! This can only be used for Bool parameters!");
+                            return;
+                        }
+
+                        if (config.VibrateWhenTriggered)
+                        {
+                            CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, false);
+                            CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, true);
+                            CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, false);
+                            CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, true);
+                        }
+
+                        switch (animParam.type)
+                        {
+                            case AnimatorControllerParameterType.Bool:
+                                //Check if this is a oneshot with no reset and the parameter is already true
+                                var currentState = PlayerSetup.Instance.animatorManager.animator.GetBool(animParam.nameHash);
+                                if (config.GestureType == CVRGesture.GestureType.OneShot && currentState && !config.CanReset)
+                                    return;
+
+                                PlayerSetup.Instance.animatorManager.SetAnimatorParameterBool(config.TargetParam, !currentState);
+                                CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, !currentState ? 1 : 0, false);
+                                break;
+                        }
                     }
 
-                    if (config.VibrateWhenTriggered)
-                    {
-                        CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, false);
-                        CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, true);
-                        CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, false);
-                        CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, true);
-                    }
-
-                    switch (animParam.type)
-                    {
-                        case AnimatorControllerParameterType.Bool:
-                            //Check if this is a oneshot with no reset and the parameter is already true
-                            var currentState = PlayerSetup.Instance.animatorManager.animator.GetBool(animParam.nameHash);
-                            if (config.GestureType == CVRGesture.GestureType.OneShot && currentState && !config.CanReset)
-                                return;
-
-                            PlayerSetup.Instance.animatorManager.SetAnimatorParameterBool(config.TargetParam, !currentState);
-                            CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, !currentState ? 1 : 0, false);
-                            break;
-                    }
+                    config.LastResetHit = DateTime.Now;
 
                     return;
                 }
@@ -315,7 +324,7 @@ internal class GestureParamDriver
 
             config.Gesture.onStay.AddListener((fl, _, _) =>
             {
-                if (!config.Enabled || config.ResetTriggered || config.GestureType == CVRGesture.GestureType.OneShot) return;
+                if (!config.Enabled || config.ResetTriggered) return;
 
                 if (!config.StartedOnStay)
                 {

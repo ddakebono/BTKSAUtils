@@ -98,11 +98,6 @@ namespace BTKSAUtils.Components
             return state;
         }
 
-        public bool IsNameplateHidden(string userID)
-        {
-            return _hiddenNameplateUserIDs.Contains(userID);
-        }
-
         private void ApplyFadeValues(float _)
         {
             if(_twImageMaterial != null)

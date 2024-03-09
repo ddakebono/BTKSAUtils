@@ -15,7 +15,7 @@ public static class BuildInfo
     public const string Name = "BTKSAUtils"; // Name of the Mod.  (MUST BE SET)
     public const string Author = "DDAkebono"; // Author of the Mod.  (Set as null if none)
     public const string Company = "BTK-Development"; // Company that made the Mod.  (Set as null if none)
-    public const string Version = "1.0.0"; // Version of the Mod.  (MUST BE SET)
+    public const string Version = "1.0.1"; // Version of the Mod.  (MUST BE SET)
     public const string DownloadLink = "https://github.com/ddakebono/BTKSAUtils/releases"; // Download Link for the Mod.  (Set as null if none)
 }
 
@@ -35,7 +35,7 @@ public class BTKSAUtils : MelonMod
         Logger = LoggerInstance;
         Harmony = HarmonyInstance;
 
-        Logger.Msg("BTK Standalone: Nameplate Mod - Starting up");
+        Logger.Msg("BTK Standalone: Utils - Starting up");
 
         if (RegisteredMelons.Any(x => x.Info.Name.Equals("BTKCompanionLoader", StringComparison.OrdinalIgnoreCase)))
         {
@@ -83,6 +83,14 @@ public class BTKSAUtils : MelonMod
         gpdToggle.OnValueUpdated += b =>
         {
             GestureParamDriver.Instance.EnableGPD = b;
+        };
+
+        var playerSelectCat = QuickMenuAPI.PlayerSelectPage.AddCategory("Bono's Utils", "BTKStandalone");
+        var toggleNP = playerSelectCat.AddButton("Toggle Nameplate", "TurnOff", "Toggles this users nameplate off and on, this is saved");
+        toggleNP.OnPress += () =>
+        {
+            var state = NameplateTweaks.Instance.ToggleNameplateVisibility();
+            QuickMenuAPI.ShowAlertToast(state ? $"{QuickMenuAPI.SelectedPlayerName}'s nameplate has been hidden!" : $"{QuickMenuAPI.SelectedPlayerName}'s nameplate has been shown!");
         };
 
         var settingsPage = functionToggles.AddPage("Util Settings", "Settings", "Change and configure all parts of Bono's Utils", "BTKStandalone");

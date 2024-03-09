@@ -3,7 +3,6 @@ using ABI_RC.Core.Player;
 using ABI.CCK.Scripts;
 using BTKSAUtils.Components;
 using HarmonyLib;
-using Yggdrasil.Logging;
 
 namespace BTKSAUtils;
 
@@ -75,7 +74,7 @@ class NameplatePatches
         }
         catch (Exception e)
         {
-            Log.Error(e);
+            BTKSAUtils.Logger.Error(e);
         }
     }
 }

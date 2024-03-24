@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using ABI_RC.Core.InteractionSystem;
 using BTKSAUtils.Components;
+using BTKSAUtils.Components.AvatarParamInterpolator;
 using BTKSAUtils.Config;
 using BTKUILib;
 using BTKUILib.UIObjects;
@@ -15,25 +16,26 @@ public static class BuildInfo
     public const string Name = "BTKSAUtils"; // Name of the Mod.  (MUST BE SET)
     public const string Author = "DDAkebono"; // Author of the Mod.  (Set as null if none)
     public const string Company = "BTK-Development"; // Company that made the Mod.  (Set as null if none)
-    public const string Version = "1.0.1"; // Version of the Mod.  (MUST BE SET)
+    public const string Version = "1.1.0-inttest"; // Version of the Mod.  (MUST BE SET)
     public const string DownloadLink = "https://github.com/ddakebono/BTKSAUtils/releases"; // Download Link for the Mod.  (Set as null if none)
 }
 
 public class BTKSAUtils : MelonMod
 {
     internal static MelonLogger.Instance Logger;
-    internal static HarmonyLib.Harmony Harmony;
+    internal static HarmonyLib.Harmony HarmonyInst;
     internal static readonly List<BTKBaseConfig> BTKConfigs = new();
 
     private bool _hasSetupUI;
-    private AltAdvAvatar _altAdvAvatar = new();
-    private GestureParamDriver _gestureParamDriver = new();
-    private NameplateTweaks _nameplateTweaks = new();
+    private readonly AltAdvAvatar _altAdvAvatar = new();
+    private readonly GestureParamDriver _gestureParamDriver = new();
+    private readonly NameplateTweaks _nameplateTweaks = new();
+    private readonly AvatarParamInterpolator _avatarParamInterpolator = new();
 
     public override void OnInitializeMelon()
     {
         Logger = LoggerInstance;
-        Harmony = HarmonyInstance;
+        HarmonyInst = HarmonyInstance;
 
         Logger.Msg("BTK Standalone: Utils - Starting up");
 
@@ -148,8 +150,16 @@ public class BTKSAUtils : MelonMod
 
         _gestureParamDriver.LateInit();
         _nameplateTweaks.LateInit();
+        _avatarParamInterpolator.LateInit();
 
         Logger.Msg("Bono's Utils are ready to use!");
+    }
+
+    public override void OnUpdate()
+    {
+        if (!_hasSetupUI) return;
+
+        _avatarParamInterpolator.OnUpdate();
     }
 
     private bool ConfigDialogs(BTKBaseConfig config)

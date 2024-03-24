@@ -175,6 +175,9 @@ internal class GestureParamDriver
         }
 
         GestureParams.Remove(_selectedConfig);
+
+        File.WriteAllText(GestureParamStorage, JsonConvert.SerializeObject(GestureParams));
+
         QuickMenuAPI.GoBack();
     }
 

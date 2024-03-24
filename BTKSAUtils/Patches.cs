@@ -1,7 +1,10 @@
-﻿using ABI_RC.Core;
+﻿using System.Reflection;
+using System.Reflection.Emit;
+using ABI_RC.Core;
 using ABI_RC.Core.Player;
 using ABI.CCK.Scripts;
 using BTKSAUtils.Components;
+using BTKSAUtils.Components.AvatarParamInterpolator;
 using HarmonyLib;
 
 namespace BTKSAUtils;
@@ -16,13 +19,14 @@ internal static class Patches
         ApplyPatches(typeof(AdvancedAvatarSettingsPatch));
         ApplyPatches(typeof(AnimatorManagerPatches));
         ApplyPatches(typeof(NameplatePatches));
+        ApplyPatches(typeof(AnimatorManagerPatch));
     }
 
     private static void ApplyPatches(Type type)
     {
         try
         {
-            BTKSAUtils.Harmony.PatchAll(type);
+            BTKSAUtils.HarmonyInst.PatchAll(type);
         }
         catch(Exception e)
         {
@@ -76,5 +80,25 @@ class NameplatePatches
         {
             BTKSAUtils.Logger.Error(e);
         }
+    }
+}
+
+[HarmonyPatch]
+class AnimatorManagerPatch
+{
+    private static readonly MethodInfo SetAnimFloatMethod = typeof(CVRAnimatorManager).GetMethod(nameof(CVRAnimatorManager.SetAnimatorParameterFloat), BindingFlags.Instance | BindingFlags.Public);
+    private static readonly MethodInfo OurAnimatorFloatSetter = typeof(AvatarParamInterpolator).GetMethod(nameof(AvatarParamInterpolator.AnimatorFloatSetter), BindingFlags.Static | BindingFlags.Public);
+
+    static MethodBase TargetMethod()
+    {
+        return typeof(CVRAnimatorManager).GetMethods(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(x => x.Name == nameof(CVRAnimatorManager.ApplyAdvancedAvatarSettings) && x.GetParameters().Any(p => p.ParameterType == typeof(bool[])));
+    }
+
+    static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchForward(false, new CodeMatch(OpCodes.Call, SetAnimFloatMethod))
+            .SetOperandAndAdvance(OurAnimatorFloatSetter)
+            .InstructionEnumeration();
     }
 }

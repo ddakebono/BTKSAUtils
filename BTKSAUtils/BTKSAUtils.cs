@@ -123,7 +123,7 @@ public class BTKSAUtils : MelonMod
                 case {} floatType when floatType == typeof(float):
                     SliderFloat slider = null;
                     var floatConfig = (BTKFloatConfig)config;
-                    slider = cat.AddSlider(floatConfig.Name, floatConfig.Description, Convert.ToSingle(floatConfig.FloatValue), floatConfig.MinValue, floatConfig.MaxValue);
+                    slider = cat.AddSlider(floatConfig.Name, floatConfig.Description, Convert.ToSingle(floatConfig.FloatValue), floatConfig.MinValue, floatConfig.MaxValue, 2, floatConfig.DefaultValue, true);
                     slider.OnValueUpdated += f =>
                     {
                         if (!ConfigDialogs(config))

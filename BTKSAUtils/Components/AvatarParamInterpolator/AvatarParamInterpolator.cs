@@ -10,7 +10,7 @@ namespace BTKSAUtils.Components.AvatarParamInterpolator;
 public class AvatarParamInterpolator
 {
     public static NetworkTickSystem NetworkTickSystem;
-    public readonly BTKBoolConfig InterpolatorToggle = new("Param Interpolation", "Enable Param Interpolation", "Turns the interpolator on and off", true, null, false);
+    public static readonly BTKBoolConfig InterpolatorToggle = new("Param Interpolation", "Enable Param Interpolation", "Turns the interpolator on and off", true, null, false);
     public static readonly BTKFloatConfig InterpolatorTime = new("Param Interpolation", "Interpolation Time", "This controls how long it takes for the interpolated value to reach the target", 0.05f, 0f, 1f, null, false);
     public static readonly BTKFloatConfig MaxInterpolationDistance = new("Param Interpolation", "Max Interpolation Distance", "Set how far away a player must be before interpolation stops being used", 8f, 0f, 20f, null, false);
 

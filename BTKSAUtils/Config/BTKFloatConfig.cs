@@ -29,6 +29,11 @@ namespace BTKSAUtils.Config
         {
             get => _internalPref.GetReflectedType();
         }
+
+        public float DefaultValue
+        {
+            get => _internalPref.DefaultValue;
+        }
         
         public String DialogMessage => _dialogMessage;
 

@@ -40,6 +40,7 @@ This feature takes all network synced floats and tosses them through an interpol
 This system ONLY affects remote players from your side, it does not smooth the data you are sending. It also doesn't make up for a lack of data, parameters are still limited to the 20 updates per second, they'll just be alot less snappy.
 
 You can configure a few settings related to this system, you can also entirely disable it if you wish. 
+- Only Interpolate Common Params - This will only enable interpolation on standard VRCFT v1/v2 and BrainflowsIntoVRChat parameters, as well as Scale. Might not be needed, but could cut down on a performance impact if one appears.
 - Changing the Interpolation Time value will change how long it takes for a parameter to reach the target value, leaving it on 0.05 is recommended but if you want to play around you can.
 - Max Interpolation Distance configures how far away someone can be for interpolation to be disabled.
 - In the player select menu you can also disable param interpolation on a per user basis, that config is persistent.

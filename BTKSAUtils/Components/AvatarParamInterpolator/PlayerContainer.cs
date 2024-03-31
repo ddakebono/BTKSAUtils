@@ -49,6 +49,8 @@ public class PlayerContainer
     public void Destroy()
     {
         _destroy = true;
+        //Unregister our listener when the object is destroyed
+        Player.PuppetMaster.OnAvatarInstantiated -= OnAvatarInstantiated;
         MelonCoroutines.Stop(_coroutineToken);
     }
 
@@ -56,6 +58,12 @@ public class PlayerContainer
     {
         foreach (var interpolator in _interpolatedFloats.Values)
             interpolator.MaximumInterpolationTime = time;
+    }
+
+    public void ReapplyParamSetup()
+    {
+        var avatar = Player.PuppetMaster.GetCVRAvatar();
+        OnAvatarInstantiated(Player.PuppetMaster.avatarObject, avatar);
     }
 
     private IEnumerator FloatParamUpdateCoroutine()
@@ -95,7 +103,7 @@ public class PlayerContainer
 
         var floatParams = Player.PuppetMaster.animatorManager.animator.parameters.Where(x => x.type == AnimatorControllerParameterType.Float).ToArray();
 
-        foreach (var param in floatParams.Where(x => !AvatarParamInterpolator.IsDefaultParam(x.name) && !x.name.StartsWith("#")))
+        foreach (var param in floatParams.Where(x => !AvatarParamInterpolator.IsDefaultParam(x.name) && !x.name.StartsWith("#") && (!AvatarParamInterpolator.CommonOSCOnly.BoolValue || AvatarParamInterpolator.IsCommonOSCParam(x.name))))
         {
             var interpolator = new BufferedLinearInterpolatorFloat();
             interpolator.MaximumInterpolationTime = AvatarParamInterpolator.InterpolatorTime.FloatValue;

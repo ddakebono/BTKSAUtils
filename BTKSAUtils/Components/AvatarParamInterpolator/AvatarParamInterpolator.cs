@@ -1,9 +1,9 @@
 ﻿using System.Text;
-using ABI_RC.Core;
 using ABI_RC.Core.Player;
 using BTKSAUtils.Components.AvatarParamInterpolator.Interpolation;
 using BTKSAUtils.Config;
 using BTKUILib;
+using UnityEngine;
 
 namespace BTKSAUtils.Components.AvatarParamInterpolator;
 
@@ -15,7 +15,9 @@ public class AvatarParamInterpolator
     public static readonly BTKFloatConfig InterpolatorTime = new("Param Interpolation", "Interpolation Time", "This controls how long it takes for the interpolated value to reach the target", 0.05f, 0f, 1f, null, false);
     public static readonly BTKFloatConfig MaxInterpolationDistance = new("Param Interpolation", "Max Interpolation Distance", "Set how far away a player must be before interpolation stops being used", 8f, 0f, 20f, null, false);
 
-    private static readonly Dictionary<CVRAnimatorManager, PlayerContainer> PlayerContainers = new();
+    private static readonly List<PlayerContainer> PlayerContainers = new();
+    private static PlayerContainer _selectedPlayerContainer;
+
     private readonly List<string> _disabledPlayerIDs = new();
 
     private static string[] _defaultParams =
@@ -364,20 +366,36 @@ public class AvatarParamInterpolator
     {
         foreach (var pair in PlayerContainers)
         {
-            pair.Value.ReapplyParamSetup();
+            pair.ReapplyParamSetup();
         }
+    }
+
+    public static void OnApplyAdvAvatarSettingsPrefix(Animator animator)
+    {
+        PlayerContainer container = null;
+
+        //Hijacked from the ApplyAdvancedAvatarSettings function
+        for (int i = 0; i < PlayerContainers.Count; i++)
+        {
+            if (PlayerContainers[i].Animator != animator) continue;
+
+            container = PlayerContainers[i];
+            break;
+        }
+
+        _selectedPlayerContainer = container;
     }
 
     private void OnPlayerSelectDisable(bool state)
     {
         if (state)
         {
-            var playerContainer = PlayerContainers.Values.FirstOrDefault(x => x.Player.Uuid == QuickMenuAPI.SelectedPlayerID);
+            var playerContainer = PlayerContainers.FirstOrDefault(x => x.Player.Uuid == QuickMenuAPI.SelectedPlayerID);
 
             if (playerContainer == null) return;
 
             playerContainer.Destroy();
-            PlayerContainers.Remove(playerContainer.Cam);
+            PlayerContainers.Remove(playerContainer);
             _disabledPlayerIDs.Add(playerContainer.Player.Uuid);
         }
         else
@@ -394,7 +412,7 @@ public class AvatarParamInterpolator
 
     private void OnConfigUpdated(float obj)
     {
-        foreach(var player in PlayerContainers.Values)
+        foreach(var player in PlayerContainers)
             player.UpdateInterpolatorTime(InterpolatorTime.FloatValue);
     }
 
@@ -411,9 +429,10 @@ public class AvatarParamInterpolator
         {
             foreach (var pair in PlayerContainers)
             {
-                pair.Value.Destroy();
+                pair.Destroy();
             }
 
+            _selectedPlayerContainer = null;
             PlayerContainers.Clear();
         }
     }
@@ -423,31 +442,31 @@ public class AvatarParamInterpolator
         PlayerContainers.Clear();
     }
 
-    public static void AnimatorFloatSetter(CVRAnimatorManager cam, string paramName, float paramValue)
+    public static void AnimatorFloatSetter(Animator animator, int paramNameHash, float paramValue)
     {
-        //Hijacked from the ApplyAdvancedAvatarSettings function
-        if (!PlayerContainers.ContainsKey(cam))
+        if (_selectedPlayerContainer == null || !InterpolatorToggle.BoolValue || _selectedPlayerContainer.Animator != animator)
         {
-            cam.SetAnimatorParameterFloat(paramName, paramValue);
+            animator.SetFloat(paramNameHash, paramValue);
             return;
         }
 
-        PlayerContainers[cam].UpdateFloat(paramName, paramValue);
+        _selectedPlayerContainer.UpdateFloat(paramNameHash, paramValue);
     }
 
     private void OnPlayerEntityRecycled(CVRPlayerEntity player)
     {
-        if (!PlayerContainers.ContainsKey(player.PuppetMaster.animatorManager)) return;
+        if (!GetContainerForPlayer(player, out var container)) return;
 
-        PlayerContainers[player.PuppetMaster.animatorManager].Destroy();
-        PlayerContainers.Remove(player.PuppetMaster.animatorManager);
+        _selectedPlayerContainer = null;
+        container.Destroy();
+        PlayerContainers.Remove(container);
     }
 
     private void OnPlayerEntityCreated(CVRPlayerEntity player)
     {
-        if (PlayerContainers.ContainsKey(player.PuppetMaster.animatorManager) || !InterpolatorToggle.BoolValue || _disabledPlayerIDs.Contains(player.Uuid)) return;
+        if (GetContainerForPlayer(player, out _) || !InterpolatorToggle.BoolValue || _disabledPlayerIDs.Contains(player.Uuid)) return;
 
-        PlayerContainers.Add(player.PuppetMaster.animatorManager, new PlayerContainer(player));
+        PlayerContainers.Add(new PlayerContainer(player));
     }
 
     public void OnUpdate()
@@ -477,5 +496,20 @@ public class AvatarParamInterpolator
             builder.AppendLine();
         }
         File.WriteAllText("UserData\\BTKDisabledParamInterpolation.txt", builder.ToString());
+    }
+
+    private bool GetContainerForPlayer(CVRPlayerEntity player, out PlayerContainer container)
+    {
+        container = null;
+
+        for (int i = 0; i < PlayerContainers.Count; i++)
+        {
+            if (PlayerContainers[i].Player == player) continue;
+
+            container = PlayerContainers[i];
+            return true;
+        }
+
+        return false;
     }
 }

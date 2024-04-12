@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using ABI_RC.Core;
 using ABI_RC.Core.Player;
 using ABI.CCK.Components;
 using BTKSAUtils.Components.AvatarParamInterpolator.Interpolation;
@@ -11,9 +10,9 @@ namespace BTKSAUtils.Components.AvatarParamInterpolator;
 public class PlayerContainer
 {
     public readonly CVRPlayerEntity Player;
-    public CVRAnimatorManager Cam;
+    public Animator Animator;
 
-    private readonly Dictionary<string, BufferedLinearInterpolatorFloat> _interpolatedFloats = new();
+    private readonly Dictionary<int, BufferedLinearInterpolatorFloat> _interpolatedFloats = new();
     private object _coroutineToken;
     private bool _destroy;
     private bool _outOfRange;
@@ -34,15 +33,15 @@ public class PlayerContainer
         _coroutineToken = MelonCoroutines.Start(FloatParamUpdateCoroutine());
     }
 
-    public void UpdateFloat(string paramName, float targetValue)
+    public void UpdateFloat(int paramNameHash, float targetValue)
     {
-        if (!_interpolatedFloats.ContainsKey(paramName) || _outOfRange)
+        if (!_interpolatedFloats.ContainsKey(paramNameHash) || _outOfRange)
         {
-            Cam.SetAnimatorParameterFloat(paramName, targetValue);
+            Animator.SetFloat(paramNameHash, targetValue);
             return;
         }
 
-        var interpolator = _interpolatedFloats[paramName];
+        var interpolator = _interpolatedFloats[paramNameHash];
         interpolator.AddMeasurement(targetValue, AvatarParamInterpolator.NetworkTickSystem.LocalTime.Time);
     }
 
@@ -50,6 +49,7 @@ public class PlayerContainer
     {
         _destroy = true;
         //Unregister our listener when the object is destroyed
+        _interpolatedFloats.Clear();
         Player.PuppetMaster.OnAvatarInstantiated -= OnAvatarInstantiated;
         MelonCoroutines.Stop(_coroutineToken);
     }
@@ -90,7 +90,7 @@ public class PlayerContainer
                 pair.Value.Update(Time.deltaTime, renderTime, localTime);
                 var value = pair.Value.GetInterpolatedValue();
 
-                Cam.SetAnimatorParameterFloat(pair.Key, value);
+                Animator.SetFloat(pair.Key, value);
             }
         }
     }
@@ -99,18 +99,18 @@ public class PlayerContainer
     {
         _interpolatedFloats.Clear();
 
-        Cam = Player.PuppetMaster.animatorManager;
+        Animator = Player.PuppetMaster.animatorManager.Animator;
 
-        var floatParams = Player.PuppetMaster.animatorManager.animator.parameters.Where(x => x.type == AnimatorControllerParameterType.Float).ToArray();
+        var floatParams = Player.PuppetMaster.animatorManager.Animator.parameters.Where(x => x.type == AnimatorControllerParameterType.Float).ToArray();
 
         foreach (var param in floatParams.Where(x => !AvatarParamInterpolator.IsDefaultParam(x.name) && !x.name.StartsWith("#") && (!AvatarParamInterpolator.CommonOSCOnly.BoolValue || AvatarParamInterpolator.IsCommonOSCParam(x.name))))
         {
             var interpolator = new BufferedLinearInterpolatorFloat();
             interpolator.MaximumInterpolationTime = AvatarParamInterpolator.InterpolatorTime.FloatValue;
 
-            interpolator.ResetTo(param.defaultFloat, AvatarParamInterpolator.NetworkTickSystem.LocalTime.Time);
+            interpolator.ResetTo(Animator.GetFloat(param.nameHash), AvatarParamInterpolator.NetworkTickSystem.LocalTime.Time);
 
-            _interpolatedFloats.Add(param.name, interpolator);
+            _interpolatedFloats.Add(param.nameHash, interpolator);
         }
     }
 }

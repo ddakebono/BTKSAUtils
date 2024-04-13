@@ -76,7 +76,7 @@ public class PlayerContainer
 
             _outOfRange = Vector3.Distance(Player.AvatarHolder.transform.position, PlayerSetup.Instance.gameObject.transform.position) >= AvatarParamInterpolator.MaxInterpolationDistance.FloatValue;
 
-            if (_outOfRange)
+            if (_outOfRange || Animator == null)
             {
                 yield return new WaitForSeconds(0.2f);
                 continue;

@@ -50,7 +50,8 @@ public class PlayerContainer
         _destroy = true;
         //Unregister our listener when the object is destroyed
         _interpolatedFloats.Clear();
-        Player.PuppetMaster.OnAvatarInstantiated -= OnAvatarInstantiated;
+        if(Player.PuppetMaster != null)
+            Player.PuppetMaster.OnAvatarInstantiated -= OnAvatarInstantiated;
         MelonCoroutines.Stop(_coroutineToken);
     }
 

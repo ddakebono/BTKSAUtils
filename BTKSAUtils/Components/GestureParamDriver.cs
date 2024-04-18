@@ -1,4 +1,5 @@
-﻿using ABI_RC.Core.InteractionSystem;
+﻿using ABI_RC.Core;
+using ABI_RC.Core.InteractionSystem;
 using ABI_RC.Core.Player;
 using ABI_RC.Core.Savior;
 using ABI_RC.Systems.InputManagement;
@@ -259,10 +260,10 @@ internal class GestureParamDriver
 
                         if (config.VibrateWhenTriggered)
                         {
-                            CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, false);
-                            CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, true);
-                            CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, false);
-                            CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, true);
+                            CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, CVRHand.Left);
+                            CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, CVRHand.Right);
+                            CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, CVRHand.Left);
+                            CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, CVRHand.Right);
                         }
 
                         switch (animParam.type)
@@ -298,10 +299,10 @@ internal class GestureParamDriver
 
                     if (config.VibrateWhenTriggered)
                     {
-                        CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, false);
-                        CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, true);
-                        CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, false);
-                        CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, true);
+                        CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, CVRHand.Left);
+                        CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, CVRHand.Right);
+                        CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, CVRHand.Left);
+                        CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, CVRHand.Right);
                     }
 
                     switch (animParam.type)
@@ -334,8 +335,8 @@ internal class GestureParamDriver
 
                     if (config.VibrateWhenTriggered)
                     {
-                        CVRInputManager.Instance.Vibrate(0f, 0.2f, 20f, 1f, false);
-                        CVRInputManager.Instance.Vibrate(0f, 0.2f, 20f, 1f, true);
+                        CVRInputManager.Instance.Vibrate(0f, 0.2f, 20f, 1f, CVRHand.Left);
+                        CVRInputManager.Instance.Vibrate(0f, 0.2f, 20f, 1f, CVRHand.Right);
                     }
                 }
 

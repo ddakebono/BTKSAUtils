@@ -64,4 +64,8 @@
       <EmbeddedResource Include="Images\BTKSATrash.png" />
     </ItemGroup>
 
+  <Target Name="CopyFinalMod" AfterTargets="Build">
+    <Copy SourceFiles="$(OutDir)\BTKSAUtils.dll" DestinationFolder="../Output/" ContinueOnError="true" />
+  </Target>
+
 </Project>

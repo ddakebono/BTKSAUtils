@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using ABI_RC.Core.Player;
+using ABI_RC.Systems.GameEventSystem;
 using BTKSAUtils.Components.AvatarParamInterpolator.Interpolation;
 using BTKSAUtils.Config;
 using BTKUILib;
@@ -331,8 +332,8 @@ public class AvatarParamInterpolator
 
         NetworkTickSystem = new NetworkTickSystem(20, timeStart, timeStart);
 
-        CVRPlayerManager.Instance.OnPlayerEntityCreated += OnPlayerEntityCreated;
-        CVRPlayerManager.Instance.OnPlayerEntityRecycled += OnPlayerEntityRecycled;
+        CVRGameEventSystem.Player.OnJoinEntity.AddListener(OnPlayerEntityCreated);
+        CVRGameEventSystem.Player.OnLeaveEntity.AddListener(OnPlayerEntityRecycled);
 
         QuickMenuAPI.OnWorldLeave += OnWorldLeave;
         InterpolatorToggle.OnConfigUpdated += OnToggleInterpolator;
@@ -487,18 +488,7 @@ public class AvatarParamInterpolator
         return _commonFloatParams.Contains(paramName);
     }
 
-    private void SaveDisabledParamInterpolation()
-    {
-        StringBuilder builder = new StringBuilder();
-        foreach (string id in _disabledPlayerIDs)
-        {
-            builder.Append(id);
-            builder.AppendLine();
-        }
-        File.WriteAllText("UserData\\BTKDisabledParamInterpolation.txt", builder.ToString());
-    }
-
-    private bool GetContainerForPlayer(CVRPlayerEntity player, out PlayerContainer container)
+    public static bool GetContainerForPlayer(CVRPlayerEntity player, out PlayerContainer container)
     {
         container = null;
 
@@ -511,5 +501,16 @@ public class AvatarParamInterpolator
         }
 
         return false;
+    }
+
+    private void SaveDisabledParamInterpolation()
+    {
+        StringBuilder builder = new StringBuilder();
+        foreach (string id in _disabledPlayerIDs)
+        {
+            builder.Append(id);
+            builder.AppendLine();
+        }
+        File.WriteAllText("UserData\\BTKDisabledParamInterpolation.txt", builder.ToString());
     }
 }

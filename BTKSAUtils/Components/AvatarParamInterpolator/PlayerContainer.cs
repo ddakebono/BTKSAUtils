@@ -21,13 +21,11 @@ public class PlayerContainer
     {
         Player = player;
 
-        Player.PuppetMaster.OnAvatarInstantiated += OnAvatarInstantiated;
-
         var avatar = Player.PuppetMaster.GetCVRAvatar();
 
         if (avatar != null)
         {
-            OnAvatarInstantiated(Player.PuppetMaster.avatarObject, avatar);
+            OnAvatarInstantiated();
         }
 
         _coroutineToken = MelonCoroutines.Start(FloatParamUpdateCoroutine());
@@ -50,8 +48,6 @@ public class PlayerContainer
         _destroy = true;
         //Unregister our listener when the object is destroyed
         _interpolatedFloats.Clear();
-        if(Player.PuppetMaster != null)
-            Player.PuppetMaster.OnAvatarInstantiated -= OnAvatarInstantiated;
         MelonCoroutines.Stop(_coroutineToken);
     }
 
@@ -63,8 +59,7 @@ public class PlayerContainer
 
     public void ReapplyParamSetup()
     {
-        var avatar = Player.PuppetMaster.GetCVRAvatar();
-        OnAvatarInstantiated(Player.PuppetMaster.avatarObject, avatar);
+        OnAvatarInstantiated();
     }
 
     private IEnumerator FloatParamUpdateCoroutine()
@@ -96,7 +91,7 @@ public class PlayerContainer
         }
     }
 
-    private void OnAvatarInstantiated(GameObject goRoot, CVRAvatar avatar)
+    public void OnAvatarInstantiated()
     {
         _interpolatedFloats.Clear();
 

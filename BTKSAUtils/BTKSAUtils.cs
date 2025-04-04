@@ -16,7 +16,7 @@ public static class BuildInfo
     public const string Name = "BTKSAUtils"; // Name of the Mod.  (MUST BE SET)
     public const string Author = "DDAkebono"; // Author of the Mod.  (Set as null if none)
     public const string Company = "BTK-Development"; // Company that made the Mod.  (Set as null if none)
-    public const string Version = "1.1.4"; // Version of the Mod.  (MUST BE SET)
+    public const string Version = "1.1.5"; // Version of the Mod.  (MUST BE SET)
     public const string DownloadLink = "https://github.com/ddakebono/BTKSAUtils/releases"; // Download Link for the Mod.  (Set as null if none)
 }
 

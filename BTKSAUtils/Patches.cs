@@ -2,6 +2,7 @@
 using System.Reflection.Emit;
 using ABI_RC.Core.Player;
 using ABI_RC.Core.Util.AnimatorManager;
+using ABI_RC.Systems.GameEventSystem;
 using ABI.CCK.Scripts;
 using BTKSAUtils.Components;
 using BTKSAUtils.Components.AvatarParamInterpolator;
@@ -22,6 +23,14 @@ internal static class Patches
         ApplyPatches(typeof(NameplatePatches));
         ApplyPatches(typeof(AnimatorManagerPatch));
         ApplyPatches(typeof(AvatarAnimManagerPatch));
+
+        CVRGameEventSystem.Avatar.OnRemoteAvatarLoad.AddListener((entity, avatar) =>
+        {
+            //Fire avatar load in PlayerContainer
+            if(!AvatarParamInterpolator.GetContainerForPlayer(entity, out var container)) return;
+
+            container.OnAvatarInstantiated();
+        });
     }
 
     private static void ApplyPatches(Type type)

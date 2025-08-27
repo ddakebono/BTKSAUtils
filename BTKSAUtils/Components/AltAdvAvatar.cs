@@ -74,7 +74,7 @@ public class AltAdvAvatar
         _paramQMElements.Clear();
 
 
-        var avatarDescriptor = PlayerSetup.Instance.GetLocalAvatarDescriptor();
+        var avatarDescriptor = PlayerSetup.Instance.AvatarDescriptor;
         var paramUIObjects = PlayerSetup.Instance.getCurrentAvatarSettings();
 
         foreach (var param in avatarDescriptor.avatarSettings.settings)

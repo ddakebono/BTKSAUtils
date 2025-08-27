@@ -21,7 +21,7 @@ public class PlayerContainer
     {
         Player = player;
 
-        var avatar = Player.PuppetMaster.GetCVRAvatar();
+        var avatar = Player.PuppetMaster.AvatarDescriptor;
 
         if (avatar != null)
         {

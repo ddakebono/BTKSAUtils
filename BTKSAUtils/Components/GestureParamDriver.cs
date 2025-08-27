@@ -247,7 +247,7 @@ internal class GestureParamDriver
                 {
                     if (DateTime.Now.Subtract(config.LastResetHit).TotalSeconds >= .5)
                     {
-                        var animParam = PlayerSetup.Instance.animatorManager.Animator.parameters.FirstOrDefault(x => x.name == config.TargetParam);
+                        var animParam = PlayerSetup.Instance.AnimatorManager.Animator.parameters.FirstOrDefault(x => x.name == config.TargetParam);
 
                         if (animParam == null)
                             return;
@@ -270,11 +270,11 @@ internal class GestureParamDriver
                         {
                             case AnimatorControllerParameterType.Bool:
                                 //Check if this is a oneshot with no reset and the parameter is already true
-                                var currentState = PlayerSetup.Instance.animatorManager.Animator.GetBool(animParam.nameHash);
+                                var currentState = PlayerSetup.Instance.AnimatorManager.Animator.GetBool(animParam.nameHash);
                                 if (config.GestureType == CVRGesture.GestureType.OneShot && currentState && !config.CanReset)
                                     return;
 
-                                PlayerSetup.Instance.animatorManager.SetParameter(config.TargetParam, !currentState);
+                                PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, !currentState);
                                 CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, !currentState ? 1 : 0, false);
                                 break;
                         }
@@ -291,7 +291,7 @@ internal class GestureParamDriver
                 if (DateTime.Now.Subtract(config.LastResetHit).TotalSeconds >= .8 && config.CanReset)
                 {
                     //Reset the parameter to default
-                    var animParam = PlayerSetup.Instance.animatorManager.Animator.parameters.FirstOrDefault(x => x.name == config.TargetParam);
+                    var animParam = PlayerSetup.Instance.AnimatorManager.Animator.parameters.FirstOrDefault(x => x.name == config.TargetParam);
 
                     if (animParam == null) return;
 
@@ -308,15 +308,15 @@ internal class GestureParamDriver
                     switch (animParam.type)
                     {
                         case AnimatorControllerParameterType.Float:
-                            PlayerSetup.Instance.animatorManager.SetParameter(config.TargetParam, animParam.defaultFloat);
+                            PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, animParam.defaultFloat);
                             CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, animParam.defaultFloat, false);
                             break;
                         case AnimatorControllerParameterType.Int:
-                            PlayerSetup.Instance.animatorManager.SetParameter(config.TargetParam, animParam.defaultInt);
+                            PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, animParam.defaultInt);
                             CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, animParam.defaultInt, false);
                             break;
                         case AnimatorControllerParameterType.Bool:
-                            PlayerSetup.Instance.animatorManager.SetParameter(config.TargetParam, animParam.defaultBool ? 1 : 0);
+                            PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, animParam.defaultBool ? 1 : 0);
                             CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, animParam.defaultBool ? 1 : 0, false);
                             break;
                     }
@@ -340,7 +340,7 @@ internal class GestureParamDriver
                     }
                 }
 
-                PlayerSetup.Instance.animatorManager.SetParameter(config.TargetParam, fl);
+                PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, fl);
                 CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, fl, false);
             });
         }

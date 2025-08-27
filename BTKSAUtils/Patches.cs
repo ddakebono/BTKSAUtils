@@ -68,11 +68,11 @@ class AdvancedAvatarSettingsPatch
 [HarmonyPatch(typeof(PlayerSetup))]
 class PlayerSetupPatch
 {
-    [HarmonyPatch(nameof(PlayerSetup.changeAnimatorParam))]
+    [HarmonyPatch(nameof(PlayerSetup.ChangeAnimatorParam))]
     [HarmonyPostfix]
-    static void SetAnimParamPostfix(string name, float value)
+    static void SetAnimParamPostfix(string parameterName, float value)
     {
-        AltAdvAvatar.UpdateAvatarParam(name, value);
+        AltAdvAvatar.UpdateAvatarParam(parameterName, value);
     }
 }
 

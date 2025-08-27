@@ -87,7 +87,7 @@ public class AltAdvAvatar
                     var toggle = _toggleCat.AddToggle(uiObject.parameterName, $"Toggle state of {uiObject.parameterName} parameter", Math.Abs(uiObject.defaultValueX - 1) < 0.9);
                     toggle.OnValueUpdated += b =>
                     {
-                        PlayerSetup.Instance.changeAnimatorParam(param.machineName, b ? 1f : 0f, 1);
+                        PlayerSetup.Instance.ChangeAnimatorParam(param.machineName, b ? 1f : 0f, PlayerSetup.ParameterChangeSource.QuickMenu);
                         CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(param.machineName, b ? 1f : 0f, false);
                     };
 
@@ -97,7 +97,7 @@ public class AltAdvAvatar
                     var multiSelect = new MultiSelection(uiObject.parameterName, uiObject.optionList, (int)uiObject.defaultValueX);
                     multiSelect.OnOptionUpdated += i =>
                     {
-                        PlayerSetup.Instance.changeAnimatorParam(param.machineName, i, 1);
+                        PlayerSetup.Instance.ChangeAnimatorParam(param.machineName, i, PlayerSetup.ParameterChangeSource.QuickMenu);
                         CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(param.machineName, i, false);
                     };
                     var msBtn = _dropdownCat.AddButton(uiObject.parameterName, "List", $"Open the multiselect page for {uiObject.parameterName}");
@@ -109,7 +109,7 @@ public class AltAdvAvatar
                     var slider = _sliderCat.AddSlider(uiObject.parameterName, $"Control the {uiObject.parameterName} slider", uiObject.defaultValueX, 0f, 1f, 2, uiObject.defaultValueX, true);
                     slider.OnValueUpdated += f =>
                     {
-                        PlayerSetup.Instance.changeAnimatorParam(param.machineName, f, 1);
+                        PlayerSetup.Instance.ChangeAnimatorParam(param.machineName, f, PlayerSetup.ParameterChangeSource.QuickMenu);
                         CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(param.machineName, f, false);
                     };
 
@@ -121,7 +121,7 @@ public class AltAdvAvatar
                     {
                         QuickMenuAPI.OpenNumberInput(uiObject.parameterName, PlayerSetup.Instance.GetAnimatorParam(param.machineName), f =>
                         {
-                            PlayerSetup.Instance.changeAnimatorParam(param.machineName, f, 1);
+                            PlayerSetup.Instance.ChangeAnimatorParam(param.machineName, f, PlayerSetup.ParameterChangeSource.QuickMenu);
                             CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(param.machineName, f, false);
                         });
                     };

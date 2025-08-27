@@ -53,7 +53,7 @@ namespace BTKSAUtils.Components
 
         public void LateInit()
         {
-            CVRPlayerManager.Instance.OnPlayerEntityRecycled += UserLeave;
+            CVRGameEventSystem.Player.OnLeaveEntity.AddListener(UserLeave);
             CVRGameEventSystem.Instance.OnDisconnected.AddListener(OnWorldLeave);
             CVRGameEventSystem.Instance.OnConnectionLost.AddListener(OnWorldLeave);
 
@@ -123,7 +123,7 @@ namespace BTKSAUtils.Components
             ApplyMaterialProperties(nameplate.playerImage.material);
             ApplyMaterialProperties(nameplate.staffplateBackground.material);
             ApplyMaterialProperties(nameplate.staffText.fontMaterial);
-            ApplyMaterialProperties(nameplate.friendsImage.material);
+            ApplyMaterialProperties(nameplate.friendsIndicator.material);
         }
 
         private void ApplyMaterialProperties(Material mat)

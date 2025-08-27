@@ -95,9 +95,9 @@ public class PlayerContainer
     {
         _interpolatedFloats.Clear();
 
-        Animator = Player.PuppetMaster.animatorManager.Animator;
+        Animator = Player.PuppetMaster.AnimatorManager.Animator;
 
-        var floatParams = Player.PuppetMaster.animatorManager.Animator.parameters.Where(x => x.type == AnimatorControllerParameterType.Float).ToArray();
+        var floatParams = Player.PuppetMaster.AnimatorManager.Animator.parameters.Where(x => x.type == AnimatorControllerParameterType.Float).ToArray();
 
         foreach (var param in floatParams.Where(x => !AvatarParamInterpolator.IsDefaultParam(x.name) && !x.name.StartsWith("#") && (!AvatarParamInterpolator.CommonOSCOnly.BoolValue || AvatarParamInterpolator.IsCommonOSCParam(x.name))))
         {

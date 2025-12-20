@@ -16,9 +16,6 @@
       <Reference Include="Assembly-CSharp">
         <HintPath>..\3rdparty\Managed\Assembly-CSharp.dll</HintPath>
       </Reference>
-      <Reference Include="BTKUILib">
-        <HintPath>..\3rdparty\Mods\BTKUILib.dll</HintPath>
-      </Reference>
       <Reference Include="MelonLoader">
         <HintPath>..\3rdparty\ml\MelonLoader.dll</HintPath>
       </Reference>

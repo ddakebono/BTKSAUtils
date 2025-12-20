@@ -2,9 +2,9 @@
 using ABI_RC.Core.Networking.IO.Social;
 using ABI_RC.Core.Player;
 using ABI_RC.Systems.GameEventSystem;
+using ABI_RC.Systems.UI.UILib;
 using BTKSAUtils.Components.Helpers;
 using BTKSAUtils.Config;
-using BTKUILib;
 using MelonLoader;
 using UnityEngine;
 
@@ -90,7 +90,7 @@ namespace BTKSAUtils.Components
             var nameplate = ActiveNameplates.FirstOrDefault(x => x.player.ownerId.Equals(QuickMenuAPI.SelectedPlayerID));
             if (nameplate == null) return state;
 
-            nameplate.UpdateNamePlate();
+            nameplate.UpdateNamePlateSettings();
 
             if (state)
                 nameplate.s_Nameplate.SetActive(false);
@@ -136,7 +136,7 @@ namespace BTKSAUtils.Components
         {
             foreach (var nameplate in ActiveNameplates)
             {
-                nameplate.UpdateNamePlate();
+                nameplate.UpdateNamePlateSettings();
 
                 if (Friends.FriendsWith(nameplate.player.ownerId) && HideFriendNameplates.BoolValue)
                     nameplate.s_Nameplate.SetActive(false);

@@ -3,7 +3,7 @@ using ABI_RC.Core.Player;
 using ABI_RC.Systems.GameEventSystem;
 using BTKSAUtils.Components.AvatarParamInterpolator.Interpolation;
 using BTKSAUtils.Config;
-using BTKUILib;
+using ABI_RC.Systems.UI.UILib;
 using UnityEngine;
 
 namespace BTKSAUtils.Components.AvatarParamInterpolator;

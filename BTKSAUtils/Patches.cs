@@ -79,7 +79,7 @@ class PlayerSetupPatch
 [HarmonyPatch(typeof(PlayerNameplate))]
 class NameplatePatches
 {
-    [HarmonyPatch(nameof(PlayerNameplate.UpdateNamePlate))]
+    [HarmonyPatch(nameof(PlayerNameplate.UpdateNamePlateSettings))]
     [HarmonyPostfix]
     static void UpdateNameplate(PlayerNameplate __instance)
     {

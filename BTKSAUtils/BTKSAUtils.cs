@@ -3,9 +3,9 @@ using ABI_RC.Core.InteractionSystem;
 using BTKSAUtils.Components;
 using BTKSAUtils.Components.AvatarParamInterpolator;
 using BTKSAUtils.Config;
-using BTKUILib;
-using BTKUILib.UIObjects;
-using BTKUILib.UIObjects.Components;
+using ABI_RC.Systems.UI.UILib;
+using ABI_RC.Systems.UI.UILib.UIObjects;
+using ABI_RC.Systems.UI.UILib.UIObjects.Components;
 using MelonLoader;
 using Semver;
 
@@ -16,7 +16,7 @@ public static class BuildInfo
     public const string Name = "BTKSAUtils"; // Name of the Mod.  (MUST BE SET)
     public const string Author = "DDAkebono"; // Author of the Mod.  (Set as null if none)
     public const string Company = "BTK-Development"; // Company that made the Mod.  (Set as null if none)
-    public const string Version = "1.1.6"; // Version of the Mod.  (MUST BE SET)
+    public const string Version = "1.1.7"; // Version of the Mod.  (MUST BE SET)
     public const string DownloadLink = "https://github.com/ddakebono/BTKSAUtils/releases"; // Download Link for the Mod.  (Set as null if none)
 }
 
@@ -43,13 +43,6 @@ public class BTKSAUtils : MelonMod
         {
             MelonLogger.Msg("Hold on a sec! Looks like you've got BTKCompanion installed, this mod is built in and not needed!");
             MelonLogger.Error("BTKSAUtils has not started up! (BTKCompanion Running)");
-            return;
-        }
-
-        if (!RegisteredMelons.Any(x => x.Info.Name.Equals("BTKUILib") && x.Info.SemanticVersion != null && x.Info.SemanticVersion.CompareTo(new SemVersion(1)) >= 0))
-        {
-            Logger.Error("BTKUILib was not detected or it outdated! BTKSAUtils cannot function without it!");
-            Logger.Error("Please download an updated copy for BTKUILib!");
             return;
         }
 

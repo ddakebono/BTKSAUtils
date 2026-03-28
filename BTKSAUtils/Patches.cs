@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Reflection.Emit;
+using ABI_RC.Core.Networking.IO.Social;
 using ABI_RC.Core.Player;
 using ABI_RC.Core.Util.AnimatorManager;
 using ABI_RC.Systems.GameEventSystem;
@@ -79,10 +80,16 @@ class PlayerSetupPatch
 [HarmonyPatch(typeof(PlayerNameplate))]
 class NameplatePatches
 {
+    private static MethodInfo _isActivePrivSetter = typeof(PlayerNameplate).GetProperty("IsActive", BindingFlags.NonPublic | BindingFlags.Instance)?.SetMethod;
+    private static object[] _paramArray = [false];
+    
     [HarmonyPatch(nameof(PlayerNameplate.UpdateNamePlateSettings))]
     [HarmonyPostfix]
     static void UpdateNameplate(PlayerNameplate __instance)
     {
+        //Don't check local player nameplate
+        if (__instance.Player.IsLocalPlayer) return;
+        
         try
         {
             Patches.OnNameplateRebuild?.Invoke(__instance);
@@ -90,6 +97,23 @@ class NameplatePatches
         catch (Exception e)
         {
             BTKSAUtils.Logger.Error(e);
+        }
+    }
+
+    [HarmonyPatch("UpdateNamePlateState")]
+    [HarmonyPostfix]
+    static void UpdateNameplateState(PlayerNameplate __instance)
+    {
+        //Don't check local player nameplate
+        if (__instance.Player.IsLocalPlayer) return;
+        
+        string userId = __instance.PlayerDescriptor.ownerId;
+
+        if (NameplateTweaks.HiddenNameplateUserIDs.Contains(userId) ||
+            (NameplateTweaks.HideFriendNameplates.BoolValue && Friends.FriendsWith(userId)))
+        {
+            //Set nameplate to false if it's hidden on friend nameplates are hidden and they're a friend
+            _isActivePrivSetter.Invoke(__instance, _paramArray);
         }
     }
 }

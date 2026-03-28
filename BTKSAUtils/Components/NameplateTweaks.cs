@@ -13,12 +13,12 @@ namespace BTKSAUtils.Components
     public class NameplateTweaks
     {
         public static NameplateTweaks Instance;
-        public static BTKBoolConfig HideFriendNameplates = new(nameof(NameplateTweaks), "Hide Friends Nameplates", "This hides the nameplates of your friends but shows all others", false, null, false);
-        public static BTKFloatConfig CloseRangeFadeMinDist = new(nameof(NameplateTweaks), "Close Range Distance Min", "Configure the minimum distance for close range fade, at this point the nameplate will be completely faded out", 0.75f, 0f, 5f, null, false);
-        public static BTKFloatConfig CloseRangeFadeMaxDist = new(nameof(NameplateTweaks), "Close Range Distance Max", "Configure the maximum distance for close range fade, at this point the nameplate will be completely visible", 1.5f, 0f, 5f, null, false);
-        public static List<PlayerNameplate> ActiveNameplates = new();
+        public static readonly BTKBoolConfig HideFriendNameplates = new(nameof(NameplateTweaks), "Hide Friends Nameplates", "This hides the nameplates of your friends but shows all others", false, null, false);
+        public static readonly BTKFloatConfig CloseRangeFadeMinDist = new(nameof(NameplateTweaks), "Close Range Distance Min", "Configure the minimum distance for close range fade, at this point the nameplate will be completely faded out", 0.75f, 0f, 5f, null, false);
+        public static readonly BTKFloatConfig CloseRangeFadeMaxDist = new(nameof(NameplateTweaks), "Close Range Distance Max", "Configure the maximum distance for close range fade, at this point the nameplate will be completely visible", 1.5f, 0f, 5f, null, false);
+        public static readonly List<PlayerNameplate> ActiveNameplates = new();
+        public static readonly List<string> HiddenNameplateUserIDs = new();
 
-        private readonly List<string> _hiddenNameplateUserIDs = new();
         private static readonly int FadeStartDistance = Shader.PropertyToID("_FadeStartDistance");
         private static readonly int FadeEndDistance = Shader.PropertyToID("_FadeEndDistance");
         private Material _twImageMaterial;
@@ -46,7 +46,7 @@ namespace BTKSAUtils.Components
 
         private void UserLeave(CVRPlayerEntity obj)
         {
-            var nameplate = ActiveNameplates.FirstOrDefault(x => x.player.ownerId == obj.Uuid);
+            var nameplate = ActiveNameplates.FirstOrDefault(x => x.PlayerDescriptor.ownerId == obj.Uuid);
             if (nameplate != null)
                 ActiveNameplates.Remove(nameplate);
         }
@@ -75,25 +75,22 @@ namespace BTKSAUtils.Components
         {
             bool state = false;
             
-            if (!_hiddenNameplateUserIDs.Contains(QuickMenuAPI.SelectedPlayerID))
+            if (!HiddenNameplateUserIDs.Contains(QuickMenuAPI.SelectedPlayerID))
             {
-                _hiddenNameplateUserIDs.Add(QuickMenuAPI.SelectedPlayerID);
+                HiddenNameplateUserIDs.Add(QuickMenuAPI.SelectedPlayerID);
                 state = true;
             }
             else
             {
-                _hiddenNameplateUserIDs.Remove(QuickMenuAPI.SelectedPlayerID);
+                HiddenNameplateUserIDs.Remove(QuickMenuAPI.SelectedPlayerID);
             }
 
             SaveHiddenNameplateFile();
 
-            var nameplate = ActiveNameplates.FirstOrDefault(x => x.player.ownerId.Equals(QuickMenuAPI.SelectedPlayerID));
+            var nameplate = ActiveNameplates.FirstOrDefault(x => x.PlayerDescriptor.ownerId.Equals(QuickMenuAPI.SelectedPlayerID));
             if (nameplate == null) return state;
 
             nameplate.UpdateNamePlateSettings();
-
-            if (state)
-                nameplate.s_Nameplate.SetActive(false);
 
             return state;
         }
@@ -137,9 +134,6 @@ namespace BTKSAUtils.Components
             foreach (var nameplate in ActiveNameplates)
             {
                 nameplate.UpdateNamePlateSettings();
-
-                if (Friends.FriendsWith(nameplate.player.ownerId) && HideFriendNameplates.BoolValue)
-                    nameplate.s_Nameplate.SetActive(false);
             }
         }
 
@@ -148,16 +142,13 @@ namespace BTKSAUtils.Components
             if(!ActiveNameplates.Contains(obj))
                 ActiveNameplates.Add(obj);
 
-            if((Friends.FriendsWith(obj.player.ownerId) && HideFriendNameplates.BoolValue) || _hiddenNameplateUserIDs.Contains(obj.player.ownerId))
-                obj.s_Nameplate.SetActive(false);
-
             ApplyNameplateFade(obj);
         }
         
         private void SaveHiddenNameplateFile()
         {
             StringBuilder builder = new StringBuilder();
-            foreach (string id in _hiddenNameplateUserIDs)
+            foreach (string id in HiddenNameplateUserIDs)
             {
                 builder.Append(id);
                 builder.AppendLine();
@@ -169,14 +160,14 @@ namespace BTKSAUtils.Components
         {
             if (File.Exists("UserData\\BTKHiddenNameplates.txt"))
             {
-                _hiddenNameplateUserIDs.Clear();
+                HiddenNameplateUserIDs.Clear();
 
                 string[] lines = File.ReadAllLines("UserData\\BTKHiddenNameplates.txt");
 
                 foreach (string line in lines)
                 {
                     if (!String.IsNullOrWhiteSpace(line))
-                        _hiddenNameplateUserIDs.Add(line);
+                        HiddenNameplateUserIDs.Add(line);
                 }
             }
         }

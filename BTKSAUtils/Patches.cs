@@ -2,6 +2,7 @@
 using System.Reflection.Emit;
 using ABI_RC.Core.Networking.IO.Social;
 using ABI_RC.Core.Player;
+using ABI_RC.Core.Savior;
 using ABI_RC.Core.Util.AnimatorManager;
 using ABI_RC.Systems.GameEventSystem;
 using ABI.CCK.Scripts;
@@ -88,7 +89,7 @@ class NameplatePatches
     static void UpdateNameplate(PlayerNameplate __instance)
     {
         //Don't check local player nameplate
-        if (__instance.Player.IsLocalPlayer) return;
+        if (__instance.Player != null && __instance.Player.IsLocalPlayer) return;
         
         try
         {
@@ -105,9 +106,9 @@ class NameplatePatches
     static void UpdateNameplateState(PlayerNameplate __instance)
     {
         //Don't check local player nameplate
-        if (__instance.Player.IsLocalPlayer) return;
-        
         string userId = __instance.PlayerDescriptor.ownerId;
+
+        if (userId == MetaPort.Instance.ownerId) return;
 
         if (NameplateTweaks.HiddenNameplateUserIDs.Contains(userId) ||
             (NameplateTweaks.HideFriendNameplates.BoolValue && Friends.FriendsWith(userId)))

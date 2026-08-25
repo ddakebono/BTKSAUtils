@@ -94,10 +94,13 @@ public class PlayerContainer
     public void OnAvatarInstantiated()
     {
         _interpolatedFloats.Clear();
+        
+        //If the AnimatorManager isn't initialized yet don't do thing!
+        if(!Player.PuppetMaster.AnimatorManager.IsInitialized) return;
 
         Animator = Player.PuppetMaster.AnimatorManager.Animator;
 
-        var floatParams = Player.PuppetMaster.AnimatorManager.Animator.parameters.Where(x => x.type == AnimatorControllerParameterType.Float).ToArray();
+        var floatParams = Animator.parameters.Where(x => x.type == AnimatorControllerParameterType.Float).ToArray();
 
         foreach (var param in floatParams.Where(x => !AvatarParamInterpolator.IsDefaultParam(x.name) && !x.name.StartsWith("#") && (!AvatarParamInterpolator.CommonOSCOnly.BoolValue || AvatarParamInterpolator.IsCommonOSCParam(x.name))))
         {

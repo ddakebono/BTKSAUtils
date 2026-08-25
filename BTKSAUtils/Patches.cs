@@ -9,6 +9,7 @@ using ABI.CCK.Scripts;
 using BTKSAUtils.Components;
 using BTKSAUtils.Components.AvatarParamInterpolator;
 using HarmonyLib;
+using MelonLoader;
 using UnityEngine;
 
 namespace BTKSAUtils;
@@ -22,7 +23,15 @@ internal static class Patches
     {
         ApplyPatches(typeof(AdvancedAvatarSettingsPatch));
         ApplyPatches(typeof(PlayerSetupPatch));
-        ApplyPatches(typeof(NameplatePatches));
+        if (!MelonMod.RegisteredMelons.Any(x => x.Info.Name.Equals("CleanPlates", StringComparison.InvariantCultureIgnoreCase)))
+        {
+            ApplyPatches(typeof(NameplatePatches));
+        }
+        else
+        {
+            BTKSAUtils.Logger.Msg("CleanPlates detected, nameplate adjustments will not function!");
+        }
+
         ApplyPatches(typeof(AnimatorManagerPatch));
         ApplyPatches(typeof(AvatarAnimManagerPatch));
 

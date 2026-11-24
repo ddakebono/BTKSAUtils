@@ -118,8 +118,6 @@ namespace BTKSAUtils.Components
             ApplyMaterialProperties(nameplate.usrNameText.fontMaterial);
             ApplyMaterialProperties(nameplate.rankText.fontMaterial);
             ApplyMaterialProperties(nameplate.playerImage.material);
-            ApplyMaterialProperties(nameplate.staffplateBackground.material);
-            ApplyMaterialProperties(nameplate.staffText.fontMaterial);
             ApplyMaterialProperties(nameplate.friendsIndicator.material);
         }
 

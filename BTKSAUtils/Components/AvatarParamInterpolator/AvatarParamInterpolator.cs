@@ -492,11 +492,11 @@ public class AvatarParamInterpolator
     {
         container = null;
 
-        for (int i = 0; i < PlayerContainers.Count; i++)
+        foreach (var playerCont in PlayerContainers)
         {
-            if (PlayerContainers[i].Player == player) continue;
+            if (playerCont.Player.Uuid != player.Uuid) continue;
 
-            container = PlayerContainers[i];
+            container = playerCont;
             return true;
         }
 

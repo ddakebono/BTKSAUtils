@@ -110,7 +110,7 @@ class NameplatePatches
         }
     }
 
-    [HarmonyPatch("UpdateNamePlateState")]
+    [HarmonyPatch("UpdateNamePlateState", typeof(bool))]
     [HarmonyPostfix]
     static void UpdateNameplateState(PlayerNameplate __instance)
     {
@@ -131,12 +131,19 @@ class NameplatePatches
 [HarmonyPatch]
 class AnimatorManagerPatch
 {
-    private static MethodInfo _setAnimFloatMethod = typeof(Animator).GetMethods(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(x => x.Name == "SetFloat" && x.GetParameters().Any(p => p.ParameterType == typeof(int)) && x.GetParameters().Length == 2);
-    private static MethodInfo _ourAnimatorFloatSetter = typeof(AvatarParamInterpolator).GetMethod(nameof(AvatarParamInterpolator.AnimatorFloatSetter), BindingFlags.Static | BindingFlags.Public);
+    private static readonly MethodInfo SetAnimFloatMethod = typeof(Animator)
+        .GetMethods(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(x =>
+            x.Name == "SetFloat" && x.GetParameters().Any(p => p.ParameterType == typeof(int)) &&
+            x.GetParameters().Length == 2);
+
+    private static readonly MethodInfo OurAnimatorFloatSetter =
+        typeof(AvatarParamInterpolator).GetMethod(nameof(AvatarParamInterpolator.AnimatorFloatSetter),
+            BindingFlags.Static | BindingFlags.Public);
 
     static MethodBase TargetMethod()
     {
-        var func = typeof(AvatarAnimatorManager).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic).FirstOrDefault(x => x.Name == "ApplyAdvancedAvatarSettings" && x.GetParameters().Any(p => p.ParameterType == typeof(bool[])));
+        var func = typeof(AvatarAnimatorManager).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
+            .FirstOrDefault(x => x.Name == "ApplyValue");
 
         return func;
     }
@@ -144,8 +151,8 @@ class AnimatorManagerPatch
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         return new CodeMatcher(instructions)
-            .MatchForward(false, new CodeMatch(OpCodes.Callvirt, _setAnimFloatMethod))
-            .SetOperandAndAdvance(_ourAnimatorFloatSetter)
+            .MatchForward(false, new CodeMatch(OpCodes.Callvirt, SetAnimFloatMethod))
+            .SetOperandAndAdvance(OurAnimatorFloatSetter)
             .InstructionEnumeration();
     }
 }
@@ -153,7 +160,7 @@ class AnimatorManagerPatch
 [HarmonyPatch(typeof(AvatarAnimatorManager))]
 class AvatarAnimManagerPatch
 {
-    [HarmonyPatch("ApplyAdvancedAvatarSettings", typeof(float[]), typeof(int[]), typeof(bool[]), typeof(bool))]
+    [HarmonyPatch("ApplyValue")]
     [HarmonyPrefix]
     static bool ApplyPrefix(AvatarAnimatorManager __instance)
     {

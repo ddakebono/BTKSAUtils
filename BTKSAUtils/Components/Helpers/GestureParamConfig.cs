@@ -1,4 +1,5 @@
 ﻿using ABI_RC.Core.Savior;
+using ABI_RC.Systems.GestureRecognition;
 using Newtonsoft.Json;
 
 namespace BTKSAUtils.Components;
@@ -14,12 +15,10 @@ public class GestureParamConfig
     public bool CanReset { get; set; }
     public bool VibrateWhenTriggered { get; set; }
     public CVRGesture.GestureType GestureType { get; set; }
-    public CVRGestureStep.GestureDirection GestureDirection { get; set; }
+    public CVRGesture.Direction GestureDirection { get; set; }
 
     [JsonIgnore]
     internal CVRGesture Gesture { get; set; }
-    [JsonIgnore]
-    internal CVRGestureStep GestureStep { get; set; }
 
     [JsonIgnore]
     internal bool ResetTriggered;

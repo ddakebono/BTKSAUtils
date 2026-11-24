@@ -2,6 +2,7 @@
 using ABI_RC.Core.InteractionSystem;
 using ABI_RC.Core.Player;
 using ABI_RC.Core.Savior;
+using ABI_RC.Systems.GestureRecognition;
 using ABI_RC.Systems.InputManagement;
 using ABI_RC.Systems.UI.UILib;
 using ABI_RC.Systems.UI.UILib.UIObjects;
@@ -27,7 +28,6 @@ internal class GestureParamDriver
                 {
                     CVRGestureRecognizer.Instance.gestures.Remove(param.Gesture);
                     param.Gesture = null;
-                    param.GestureStep = null;
                 }
 
                 if (!_enabled && value)
@@ -123,7 +123,7 @@ internal class GestureParamDriver
         };
         _paramSelector = new MultiSelection("Parameter Selection", new[] { "none" }, 0);
         _typeSelector = new MultiSelection("Gesture Type", Enum.GetNames(typeof(CVRGesture.GestureType)), 0);
-        _directionSelector = new MultiSelection("Gesture Direction", Enum.GetNames(typeof(CVRGestureStep.GestureDirection)), 0);
+        _directionSelector = new MultiSelection("Gesture Direction", Enum.GetNames(typeof(CVRGesture.Direction)), 0);
 
         foreach (var param in GestureParams)
             ConfigureParamDriver(param, true);
@@ -147,7 +147,7 @@ internal class GestureParamDriver
         _selectedConfig.TargetParam = _paramSelector.Options[_paramSelector.SelectedOption];
         _selectedConfig.Enabled = _enabledToggle.ToggleValue;
         _selectedConfig.GestureType = (CVRGesture.GestureType)(_typeSelector.SelectedOption + 1);
-        _selectedConfig.GestureDirection = (CVRGestureStep.GestureDirection)_directionSelector.SelectedOption;
+        _selectedConfig.GestureDirection = (CVRGesture.Direction)_directionSelector.SelectedOption;
         _selectedConfig.CanReset = _canReset.ToggleValue;
         _selectedConfig.HandsInView = _handsInView.ToggleValue;
         _selectedConfig.VibrateWhenTriggered = _vibrateWhenTriggered.ToggleValue;
@@ -165,7 +165,6 @@ internal class GestureParamDriver
         {
             CVRGestureRecognizer.Instance.gestures.Remove(_selectedConfig.Gesture);
             _selectedConfig.Gesture = null;
-            _selectedConfig.GestureStep = null;
         }
 
         if (_paramListButtons.ContainsKey(_selectedConfig))
@@ -203,7 +202,7 @@ internal class GestureParamDriver
             File.WriteAllText(GestureParamStorage, JsonConvert.SerializeObject(GestureParams));
         }
 
-        if (!_paramListButtons.ContainsKey(config))
+        if (!_paramListButtons.TryGetValue(config, out var button))
         {
             var newButton = ParamListCat.AddButton($"Edit {config.Name}", "Settings", $"Edit the config for {config.Name}");
             newButton.OnPress += () =>
@@ -215,87 +214,40 @@ internal class GestureParamDriver
         }
         else
         {
-            _paramListButtons[config].ButtonText = config.Name;
+            button.ButtonText = config.Name;
         }
 
-        if (config.Gesture != null)
+        if (config.Gesture != null && !config.Enabled)
         {
-            //Update CVRGesture
-            config.Gesture.steps.Clear();
-
-            if (!config.Enabled)
-            {
-                //Param was disabled
-                CVRGestureRecognizer.Instance.gestures.Remove(config.Gesture);
-                config.Gesture = null;
-                config.GestureStep = null;
-                return;
-            }
+            //Param was disabled
+            CVRGestureRecognizer.Instance.gestures.Remove(config.Gesture);
+            config.Gesture = null;
+            return;
         }
-        else
+
+        if (!config.Enabled)
+            return;
+
+        var uuid = Guid.NewGuid();
+        config.Gesture = new CVRGesture();
+        config.Gesture.name = $"BTKGestureDriver-{uuid}";
+
+        config.Gesture.onStart.AddListener((_, _, _) =>
         {
-            if (!config.Enabled)
-                return;
-
-            var uuid = Guid.NewGuid();
-            config.Gesture = new CVRGesture();
-            config.Gesture.name = $"BTKGestureDriver-{uuid}";
-
-            config.Gesture.onStart.AddListener((_, _, _) =>
+            if (config.GestureType == CVRGesture.GestureType.OneShot)
             {
-                if (config.GestureType == CVRGesture.GestureType.OneShot)
+                if (DateTime.Now.Subtract(config.LastResetHit).TotalSeconds >= .5)
                 {
-                    if (DateTime.Now.Subtract(config.LastResetHit).TotalSeconds >= .5)
-                    {
-                        var animParam = PlayerSetup.Instance.AnimatorManager.Animator.parameters.FirstOrDefault(x => x.name == config.TargetParam);
-
-                        if (animParam == null)
-                            return;
-
-                        if (animParam.type != AnimatorControllerParameterType.Bool)
-                        {
-                            BTKSAUtils.Logger.Msg($"GestureParamDriver for {config.Name} is set to OneShot mode! This can only be used for Bool parameters!");
-                            return;
-                        }
-
-                        if (config.VibrateWhenTriggered)
-                        {
-                            CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, CVRHand.Left);
-                            CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, CVRHand.Right);
-                            CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, CVRHand.Left);
-                            CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, CVRHand.Right);
-                        }
-
-                        switch (animParam.type)
-                        {
-                            case AnimatorControllerParameterType.Bool:
-                                //Check if this is a oneshot with no reset and the parameter is already true
-                                var currentState = PlayerSetup.Instance.AnimatorManager.Animator.GetBool(animParam.nameHash);
-                                if (config.GestureType == CVRGesture.GestureType.OneShot && currentState && !config.CanReset)
-                                    return;
-
-                                PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, !currentState);
-                                CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, !currentState ? 1 : 0, false);
-                                break;
-                        }
-                    }
-
-                    config.LastResetHit = DateTime.Now;
-
-                    return;
-                }
-
-                config.ResetTriggered = false;
-                config.StartedOnStay = false;
-
-                if (DateTime.Now.Subtract(config.LastResetHit).TotalSeconds >= .8 && config.CanReset)
-                {
-                    //Reset the parameter to default
                     var animParam = PlayerSetup.Instance.AnimatorManager.Animator.parameters.FirstOrDefault(x => x.name == config.TargetParam);
 
-                    if (animParam == null) return;
+                    if (animParam == null)
+                        return;
 
-                    config.ResetTriggered = true;
+                    if (animParam.type != AnimatorControllerParameterType.Bool)
+                    {
+                        BTKSAUtils.Logger.Error($"GestureParamDriver for {config.Name} is set to OneShot mode! This can only be used for Bool parameters!");
+                        return;
+                    }
 
                     if (config.VibrateWhenTriggered)
                     {
@@ -307,50 +259,88 @@ internal class GestureParamDriver
 
                     switch (animParam.type)
                     {
-                        case AnimatorControllerParameterType.Float:
-                            PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, animParam.defaultFloat);
-                            CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, animParam.defaultFloat, false);
-                            break;
-                        case AnimatorControllerParameterType.Int:
-                            PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, animParam.defaultInt);
-                            CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, animParam.defaultInt, false);
-                            break;
                         case AnimatorControllerParameterType.Bool:
-                            PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, animParam.defaultBool ? 1 : 0);
-                            CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, animParam.defaultBool ? 1 : 0, false);
+                            //Check if this is a oneshot with no reset and the parameter is already true
+                            var currentState = PlayerSetup.Instance.AnimatorManager.Animator.GetBool(animParam.nameHash);
+                            if (config.GestureType == CVRGesture.GestureType.OneShot && currentState && !config.CanReset)
+                                return;
+
+                            PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, !currentState);
+                            CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, !currentState ? 1 : 0, false);
                             break;
                     }
                 }
 
                 config.LastResetHit = DateTime.Now;
-            });
 
-            config.Gesture.onStay.AddListener((fl, _, _) =>
+                return;
+            }
+
+            config.ResetTriggered = false;
+            config.StartedOnStay = false;
+
+            if (DateTime.Now.Subtract(config.LastResetHit).TotalSeconds >= .8 && config.CanReset)
             {
-                if (!config.Enabled || config.ResetTriggered) return;
+                //Reset the parameter to default
+                var animParam = PlayerSetup.Instance.AnimatorManager.Animator.parameters.FirstOrDefault(x => x.name == config.TargetParam);
 
-                if (!config.StartedOnStay)
+                if (animParam == null) return;
+
+                config.ResetTriggered = true;
+
+                if (config.VibrateWhenTriggered)
                 {
-                    config.StartedOnStay = true;
-
-                    if (config.VibrateWhenTriggered)
-                    {
-                        CVRInputManager.Instance.Vibrate(0f, 0.2f, 20f, 1f, CVRHand.Left);
-                        CVRInputManager.Instance.Vibrate(0f, 0.2f, 20f, 1f, CVRHand.Right);
-                    }
+                    CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, CVRHand.Left);
+                    CVRInputManager.Instance.Vibrate(0f, 0.1f, 10f, 1f, CVRHand.Right);
+                    CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, CVRHand.Left);
+                    CVRInputManager.Instance.Vibrate(0.2f, 0.1f, 10f, 1f, CVRHand.Right);
                 }
 
-                PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, fl);
-                CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, fl, false);
-            });
-        }
+                switch (animParam.type)
+                {
+                    case AnimatorControllerParameterType.Float:
+                        PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, animParam.defaultFloat);
+                        CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, animParam.defaultFloat, false);
+                        break;
+                    case AnimatorControllerParameterType.Int:
+                        PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, animParam.defaultInt);
+                        CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, animParam.defaultInt, false);
+                        break;
+                    case AnimatorControllerParameterType.Bool:
+                        PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, animParam.defaultBool ? 1 : 0);
+                        CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, animParam.defaultBool ? 1 : 0, false);
+                        break;
+                }
+            }
+
+            config.LastResetHit = DateTime.Now;
+        });
+
+        config.Gesture.onStay.AddListener((fl, _, _) =>
+        {
+            if (!config.Enabled || config.ResetTriggered || config.GestureType == CVRGesture.GestureType.OneShot) return;
+
+            if (!config.StartedOnStay)
+            {
+                config.StartedOnStay = true;
+
+                if (config.VibrateWhenTriggered)
+                {
+                    CVRInputManager.Instance.Vibrate(0f, 0.2f, 20f, 1f, CVRHand.Left);
+                    CVRInputManager.Instance.Vibrate(0f, 0.2f, 20f, 1f, CVRHand.Right);
+                }
+            }
+
+            PlayerSetup.Instance.AnimatorManager.SetParameter(config.TargetParam, fl);
+            CVR_MenuManager.Instance.SendAdvancedAvatarUpdate(config.TargetParam, fl, false);
+        });
 
         config.Gesture.type = config.GestureType;
 
-        config.GestureStep = new CVRGestureStep
+        config.Gesture = new CVRGesture
         {
-            firstGesture = GetValidGesture(config.RightEmote),
-            secondGesture = GetValidGesture(config.LeftEmote),
+            firstSign = GetValidSign(config.RightEmote),
+            secondSign = GetValidSign(config.LeftEmote),
             needsToBeInView = config.HandsInView,
             direction = config.GestureDirection,
             startDistance = .25f,
@@ -358,15 +348,13 @@ internal class GestureParamDriver
             maxRelativeDirection = 1f
         };
 
-        config.Gesture.steps.Add(config.GestureStep);
-
         if(!CVRGestureRecognizer.Instance.gestures.Contains(config.Gesture))
             CVRGestureRecognizer.Instance.gestures.Add(config.Gesture);
     }
 
-    private CVRGestureStep.Gesture GetValidGesture(string gesture)
+    private CVRGesture.Sign GetValidSign(string gesture)
     {
-        if (!Enum.TryParse(gesture, true, out CVRGestureStep.Gesture result))
+        if (!Enum.TryParse(gesture, true, out CVRGesture.Sign result))
         {
             BTKSAUtils.Logger.Error("The selected gesture does not exist! Defaulting to Fist");
         }
